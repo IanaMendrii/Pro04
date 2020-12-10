@@ -3,22 +3,22 @@
 using namespace std;
 	void Config::IsAnySymbol(string &line)
 	{
-		if (line.empty() || all_of(line.begin(), line.end(),
-			[](unsigned char c)->bool {	return c == ' '; }))
+		int(*IsSpace)(int) = isspace;
+		if (line.empty() || all_of(line.begin(), line.end(), IsSpace))
 			throw Err_Config("There is no " + line + " definition");
 	}
 	void Config::removeSpaces(string &line)
 	{
 		for (unsigned int i = 0; i <line.size(); ++i)
 		{
-			if (line[i] != ' ')
+			if (!isspace(line[i]))
 			{
 				line.erase(0, i); break;
 			}
 		}
 		for (unsigned int i = line.size() - 1; i >= 0; --i)
 		{
-			if (line[i] != ' ')
+			if (!isspace(line[i]))
 			{
 				line.erase(i + 1, line.size() - i - 1); break;
 			}
@@ -51,3 +51,25 @@ using namespace std;
 			return c == ' '; }))
 				throw Err_Config("There is unexpected space inside line");
 	}
+	void Config::IsUnique(string &key, string &CurSection, vector <Config> &ConfigLine)
+	{
+		int size = ConfigLine.size();
+		if (size == 0) return;
+		int it = size - 1;
+		while (it >= 0 && CurSection == ConfigLine[it].GetSection())
+		{
+
+			if (key == ConfigLine[it].GetKey())
+				throw Err_Config("Key " + key + " appears twice in Section");
+			--it;
+		}
+	}
+	void Config::IsUnique(string& CurSection, vector <string> &Section)
+	{
+		if (count(Section.begin(), Section.end(), CurSection) != 0)
+		{
+			throw Err_Config("Section " + CurSection + " appears twice in config file");
+
+		}
+	}
+

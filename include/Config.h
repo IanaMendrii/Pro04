@@ -38,6 +38,6 @@ public:
 	void CheckFirstSymbol(string &Line);
 	void CheckSymbol(string &Line);
 	void isInsideSpace(string &Line);
-	virtual void IsUnique(string& CurSection, vector <string> &Section){};
-	virtual void IsUnique(string &key, string &CurSection, vector <Config> &ConfigLine) {};
+	void IsUnique(string& CurSection, vector <string> &Section);
+	void IsUnique(string &key, string &CurSection, vector <Config> &ConfigLine);
 };

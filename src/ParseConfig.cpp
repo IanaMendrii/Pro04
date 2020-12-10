@@ -1,51 +1,61 @@
 #include "ParseConfig.h"
 #include "Config.h"
-#include "Sections.h"
-#include "KeyValuePair.h"
 #include "Err_Config.h"
+#include "Err_File.h"
+#include <fstream>
 using namespace std;
-Config *sConfig = new Sections();
-Config *kConfig = new KeyValuePair();
+Config config;
+void ParseConfig::IsAnyEmptySection()
+{
+	vector <string> SectionConf;
 
-void ParseConfig::IsEmptySection()
+	int size = Section.size();
+	int sizeConfig = ConfigLine.size();
+	for (int it = 0; it < sizeConfig - 1; it++)
+		SectionConf.push_back(ConfigLine[it].GetSection());
+
+	for (int it = 0; it < size - 1; it++)
 	{
-		if (Section.size() == 0) return;
-		string a = "";
-		if (ConfigLine.size()>0)
-			a = ConfigLine[ConfigLine.size() - 1].GetSection();
-		if (Section[Section.size() - 1] != a || ConfigLine.size() == 0)
-			cerr << "Warning: " << "[Section " + Section[Section.size() - 1] + " is empty]!\n";
+		if (count(SectionConf.begin(), SectionConf.end(), Section[it]) == 0)
+			cerr << "Warning: " << "[Section " + Section[it] + " is empty]!\n";
 	}
+}
 
 bool ParseConfig::is_Section(string &str)
 	{ 
 		return count(str.begin(), str.end(), '[') == 1 && count(str.begin(), str.end(), ']') == 1;
 	}
 string ParseConfig::ExtractSection(string &str)
+{
+	int n1, n2;
+	size_t found = str.find("[");
+	if (found != string::npos)
+		n1 = found + 1;
+	found = str.find("]");
+	if (found != string::npos)
+		n2 = found - n1;
+	string a = str.substr(0, n1 - 1);
+	int(*IsSpace)(int) = isspace;
+	if (find_if_not(a.begin(), a.end(), IsSpace) != a.end())
 	{
-		int n1, n2;
-		size_t found = str.find("[");
-		if (found != string::npos)
-			n1 = found + 1;
-		found = str.find("]");
-		if (found != string::npos)
-			n2 = found - n1;
-		string a = str.substr(0, n1 - 1);
-		if (a.find_first_not_of(' ') != string::npos) 
-			throw Err_Config(" unexpected symbol/s before [ ");
+		throw Err_Config(" unexpected symbol/s before [ ");
+	}
 		a = str.substr(n2 + 2);
-		if (a.find_first_not_of(' ') != string::npos) 
+
+		if (find_if_not(a.begin(), a.end(), IsSpace) != a.end())
+		{
 			throw Err_Config(" unexpected symbol/s after ] ");
+		}
 		return str.substr(n1, n2);
 	}
 void ParseConfig::addSection(string& str)
 	{
 	    CurSection =ExtractSection(str);
-		sConfig->IsAnySymbol(CurSection);
-		sConfig->removeSpaces(CurSection);
-		sConfig->CheckFirstSymbol(CurSection);
-		sConfig->CheckSymbol(CurSection);
-		sConfig->IsUnique(CurSection, Section);
+		config.IsAnySymbol(CurSection);
+		config.removeSpaces(CurSection);
+		config.CheckFirstSymbol(CurSection);
+		config.CheckSymbol(CurSection);
+		config.IsUnique(CurSection, Section);
 		Section.push_back(CurSection);
 	}
 bool ParseConfig::is_KeyValuePair(string &str)
@@ -67,35 +77,32 @@ void ParseConfig::SplitKeyValuePair(string &str, string &key, string &value)
 	}
 void ParseConfig::addKeyValuePair(string& str)
 	{
-		if (Section.empty())
+	if (Section.empty())
 		{
 			throw Err_Config("Line does not occur within a section");
 		}
 
 		string key, value;
 		SplitKeyValuePair(str, key, value);
-		kConfig->IsAnySymbol(key);
-		kConfig->IsAnySymbol(value);
-		kConfig->removeSpaces(key);
-		kConfig->removeSpaces(value);
-		kConfig->isInsideSpace(key);
-		kConfig->isInsideSpace(value);
-		kConfig->CheckFirstSymbol(key);
-		kConfig->CheckSymbol(key);
-		kConfig->IsUnique(key, CurSection, ConfigLine);
+		config.IsAnySymbol(key);
+		config.IsAnySymbol(value);
+		config.removeSpaces(key);
+		config.removeSpaces(value);
+		config.isInsideSpace(key);
+		config.isInsideSpace(value);
+		config.CheckFirstSymbol(key);
+		config.CheckSymbol(key);
+		config.IsUnique(key, CurSection, ConfigLine);
 		ConfigLine.push_back(Config(CurSection, key, value));
 
 
 	}
 void ParseConfig::parseLine(string& str)
 	{
-
-
 		if (str.empty())
 			return;
 		else if (is_Section(str))
 		{
-			IsEmptySection();
 			addSection(str);
 		}
 		else if (is_KeyValuePair(str))
@@ -105,6 +112,49 @@ void ParseConfig::parseLine(string& str)
 		}
 		else
 			throw Err_Config("Line is not valid");
-
-
 	}
+void  ParseConfig::Start(int argc, char *argv[])
+{
+	if (argc == 1)
+	{
+		throw Err_File("File path not specified");
+	}
+
+	fstream file(argv[1], ios::in);
+	if (!file.is_open())
+	{
+		throw Err_File("File not is found");
+	}
+		file.seekg(0, std::ios::end);
+		int size = file.tellg();
+		file.seekg(0, std::ios::beg);
+		if (size == 0)
+			throw Err_File("File  is empty");
+	
+		
+		
+			
+	string str;
+	int numLine = 0;
+	vector<string> strLine;
+			while (getline(file, str))
+		{
+			strLine.push_back("Line" + to_string(numLine) + ": " + str);
+			{
+				try
+			{
+			parseLine(str);
+			}
+				catch (Err_Config& err)
+				{
+					cout << endl;
+					cout << err.get_type() << "[" << err.message << "]! in " <<strLine[numLine]<< endl;
+					exit(1);
+				}
+			}
+		numLine++;
+		}
+	IsAnyEmptySection();
+	file.close();
+
+}

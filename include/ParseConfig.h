@@ -23,4 +23,5 @@ public:
 	void SplitKeyValuePair(string &str, string &key, string &value);
 	void addKeyValuePair(string& str);
 	void parseLine(string& str);
+	void Start(int argc, char *argv[]);
 };
