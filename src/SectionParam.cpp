@@ -77,3 +77,28 @@ void SectionParam::SplitParam(string &str, string &key, string &value)
     CheckFirstSymbol(key);
     CheckSymbol(key);
 }
+void SectionParam::addParam(vector<string> &Pair, vector<SectionParam> &Param, int numLine)
+{
+	string key, value;
+	Param.clear();
+
+	for (unsigned int it = 0; it < Pair.size(); it++)
+	{
+		try
+		{
+			SplitParam(Pair[it], key, value);
+			if (!IsKeyUnique(key, Param))
+				throw Err_Config("Key " + key + " appears twice in Section");
+			Param.push_back(SectionParam(key, value));
+		}
+		catch (Err_Config &err)
+		{
+			cout << endl;
+			cout << err.get_type() << "[" << err.message << "]! in Line " << numLine + it << " [" << Pair[it] << "]" << endl;
+			cout << err.usage_typeParam() << endl;
+			exit(1);
+		}
+	}
+
+	Pair.clear();
+}

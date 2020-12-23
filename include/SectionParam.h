@@ -34,4 +34,5 @@ public:
     void isInsideSpace(string &Line);
     bool IsKeyUnique(string &key, vector<SectionParam> &Param);
     void SplitParam(string &str, string &key, string &value);
+	void addParam(vector<string> &Pair, vector<SectionParam> &Param, int numLine);
 };

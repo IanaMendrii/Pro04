@@ -4,19 +4,25 @@
 #include "Section.h"
 #include "SectionParam.h"
 #include <fstream>
-#include "Configfile.h"
-Configfile configfile;
-
+Section section;
+bool Parsing::is_Section(string &str)
+{
+	return count(str.begin(), str.end(), '[') == 1 && count(str.begin(), str.end(), ']') == 1;
+}
+bool Parsing::is_SectionParam(string &str)
+{
+	return count(str.begin(), str.end(), '=') == 1;
+}
 int Parsing::GetTypeLine(string &str)
 {
     if (str.empty())
         return -1;
-    else if (configfile.is_Section(str))
+	else if (is_Section(str))
         return 1;
-    else if (configfile.is_SectionParam(str))
-        return 0;
-    else
-        throw Err_Config("Line is not valid");
+	else if (is_SectionParam(str))
+		return 0;
+	else
+		return -2;
 }
 void Parsing::GetLines(int argc, char *argv[])
 {
@@ -40,24 +46,27 @@ void Parsing::GetLines(int argc, char *argv[])
     string CurSection = "";
     int numLine = 0;
     vector<string> Pair;
-    vector<Section> *section = new vector<Section>;
-    vector<string> strLine;
+    vector<Section> sectionVec;
     try
     {
 
         while (getline(file, str))
         {
             numLine++;
-            strLine.push_back(str);
             LineType = GetTypeLine(str);
             switch (LineType)
             {
             case 1: //Section;
                 if (CurSection != "")
                 {
-                    configfile.addSection(Pair, CurSection, *section, numLine);
+					
+					section.addSection(Pair, CurSection, sectionVec, numLine);
                 }
-                CurSection = configfile.ExtractSection(str, numLine);
+                CurSection = section.ExtractSection(str, numLine);
+				if (!section.IsSectionUnique(CurSection, sectionVec))
+				{
+					throw Err_Config("Section " + CurSection + " appears twice in Config file");
+				}
                 break;
             case 0: //SectionParam;
                 if (CurSection == "")
@@ -65,18 +74,21 @@ void Parsing::GetLines(int argc, char *argv[])
                 Pair.push_back(str);
                 break;
             case -1:
-                continue;
+                break;
+			case -2:
+				throw Err_Config("Line is not valid");
+				break;
             }
         }
-        configfile.addSection(Pair, CurSection, *section, numLine);
-        configfile.PrintVec(*section);
+        section.addSection(Pair, CurSection, sectionVec, numLine);
+        section.PrintVec(sectionVec);
         file.close();
     }
 
     catch (Err_Config &err)
     {
         cout << endl;
-        cout << err.get_type() << "[" << err.message << "]! in Line " << numLine << " [" << strLine[numLine] << "]" << endl;
+        cout << err.get_type() << "[" << err.message << "]! in Line " << numLine << " [" << str << "]" << endl;
         exit(1);
     }
 }

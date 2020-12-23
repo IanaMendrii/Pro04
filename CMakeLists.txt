@@ -6,8 +6,7 @@ set(SRC_DIR src)
 
 set(EXAMPLE_SRC ${SRC_DIR}/main.cpp
                 ${SRC_DIR}/Parsing.cpp
-                ${SRC_DIR}/Configfile.cpp
-				${SRC_DIR}/Section.cpp
+               	${SRC_DIR}/Section.cpp
 				${SRC_DIR}/SectionParam.cpp)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
