@@ -41,7 +41,7 @@ void SectionParam::CheckSymbol(string &Line)
 void SectionParam::isInsideSpace(string &Line)
 {
     if (any_of(Line.begin(), Line.end(), [](unsigned char c) -> bool { return c == ' '; }))
-        throw Err_Config("There is unexpected space inside line");
+        throw Err_Config("There is unexpected space inside");
 }
 bool SectionParam::IsKeyUnique(string &key, vector<SectionParam> &Param)
 {
@@ -79,26 +79,26 @@ void SectionParam::SplitParam(string &str, string &key, string &value)
 }
 void SectionParam::addParam(vector<string> &Pair, vector<SectionParam> &Param, int numLine)
 {
-	string key, value;
-	Param.clear();
+    string key, value;
+    Param.clear();
 
-	for (unsigned int it = 0; it < Pair.size(); it++)
-	{
-		try
-		{
-			SplitParam(Pair[it], key, value);
-			if (!IsKeyUnique(key, Param))
-				throw Err_Config("Key " + key + " appears twice in Section");
-			Param.push_back(SectionParam(key, value));
-		}
-		catch (Err_Config &err)
-		{
-			cout << endl;
-			cout << err.get_type() << "[" << err.message << "]! in Line " << numLine + it << " [" << Pair[it] << "]" << endl;
-			cout << err.usage_typeParam() << endl;
-			exit(1);
-		}
-	}
+    for (unsigned int it = 0; it < Pair.size(); it++)
+    {
+        try
+        {
+            SplitParam(Pair[it], key, value);
+            if (!IsKeyUnique(key, Param))
+                throw Err_Config("Key " + key + " appears twice in Section");
+            Param.push_back(SectionParam(key, value));
+        }
+        catch (Err_Config &err)
+        {
+            cout << endl;
+            cout << err.get_type() << "[" << err.message << "]! in Line " << numLine + it << " [" << Pair[it] << "]" << endl;
+            cout << err.usage_typeParam() << endl;
+            exit(1);
+        }
+    }
 
-	Pair.clear();
+    Pair.clear();
 }

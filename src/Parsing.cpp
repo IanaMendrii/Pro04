@@ -4,37 +4,43 @@
 #include "Section.h"
 #include "SectionParam.h"
 #include <fstream>
+#include "Configfile.h"
 Section section;
 bool Parsing::is_Section(string &str)
 {
-	return count(str.begin(), str.end(), '[') == 1 && count(str.begin(), str.end(), ']') == 1;
+    return count(str.begin(), str.end(), '[') == 1 && count(str.begin(), str.end(), ']') == 1;
 }
 bool Parsing::is_SectionParam(string &str)
 {
-	return count(str.begin(), str.end(), '=') == 1;
+    return count(str.begin(), str.end(), '=') == 1;
 }
 int Parsing::GetTypeLine(string &str)
 {
     if (str.empty())
         return -1;
-	else if (is_Section(str))
+    else if (is_Section(str))
         return 1;
-	else if (is_SectionParam(str))
-		return 0;
-	else
-		return -2;
+    else if (is_SectionParam(str))
+        return 0;
+    else
+        return -2;
 }
-void Parsing::GetLines(int argc, char *argv[])
+void Parsing::PrintVec(vector<Section> &sectionVec)
 {
-    if (argc == 1)
+    for (auto it = sectionVec.begin(); it != sectionVec.end(); it++)
     {
-        throw Err_File("File path not specified");
+        for (auto l = it->GetParam().begin(); l != it->GetParam().end(); l++)
+            cout << it->GetSectionName() << "." << l->GetKey() << ":" << l->GetValue() << "\n";
     }
-
-    fstream file(argv[1], ios::in);
+}
+void Parsing::GetLines(string &filename, vector<Section> &sectionVec)
+{
+    if (filename == "")
+        throw Err_File("File path not specified");
+    fstream file(filename, ios::in);
     if (!file.is_open())
     {
-        throw Err_File("File not is found");
+        throw Err_File("File " + filename + " not is found");
     }
     file.seekg(0, std::ios::end);
     int size = file.tellg();
@@ -46,7 +52,6 @@ void Parsing::GetLines(int argc, char *argv[])
     string CurSection = "";
     int numLine = 0;
     vector<string> Pair;
-    vector<Section> sectionVec;
     try
     {
 
@@ -59,14 +64,14 @@ void Parsing::GetLines(int argc, char *argv[])
             case 1: //Section;
                 if (CurSection != "")
                 {
-					
-					section.addSection(Pair, CurSection, sectionVec, numLine);
+
+                    section.addSection(Pair, CurSection, sectionVec, numLine);
                 }
                 CurSection = section.ExtractSection(str, numLine);
-				if (!section.IsSectionUnique(CurSection, sectionVec))
-				{
-					throw Err_Config("Section " + CurSection + " appears twice in Config file");
-				}
+                if (!section.IsSectionUnique(CurSection, sectionVec))
+                {
+                    throw Err_Config("Section " + CurSection + " appears twice in Config file");
+                }
                 break;
             case 0: //SectionParam;
                 if (CurSection == "")
@@ -75,13 +80,14 @@ void Parsing::GetLines(int argc, char *argv[])
                 break;
             case -1:
                 break;
-			case -2:
-				throw Err_Config("Line is not valid");
-				break;
+            case -2:
+                throw Err_Config("Line is not valid");
+                break;
             }
         }
         section.addSection(Pair, CurSection, sectionVec, numLine);
-        section.PrintVec(sectionVec);
+        //PrintVec(sectionVec);
+
         file.close();
     }
 

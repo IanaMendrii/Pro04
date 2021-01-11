@@ -31,15 +31,15 @@ string Section::ExtractSection(string &str, int NumLine)
     if (found != string::npos)
         n2 = found - n1;
     string SectionName = str.substr(n1, n2);
-    int(*IsSpace)(int) = isspace;
+    int (*IsSpace)(int) = isspace;
     try
     {
-        string a=str.substr(0, n1 - 1);
+        string a = str.substr(0, n1 - 1);
         if (!all_of(a.begin(), a.end(), IsSpace))
         {
             throw Err_Config(" unexpected symbol/s before '[' ");
         }
-        a = str.substr(n1+n2+1);
+        a = str.substr(n1 + n2 + 1);
         if (!all_of(a.begin(), a.end(), IsSpace))
         {
             throw Err_Config(" unexpected symbol/s after ']' ");
@@ -63,15 +63,7 @@ void Section::addSection(vector<string> &Pair, string &CurSection, vector<Sectio
 {
     if (Pair.empty())
         cerr << "Warning: "
-        << "[Section " + CurSection + " is empty]!\n";
+             << "[Section " + CurSection + " is empty]!\n";
     sectionParam.addParam(Pair, Param, NumLine);
     sectionVec.push_back(Section(CurSection, Param));
-}
-void Section::PrintVec(vector<Section> &sectionVec)
-{
-    for (auto it = sectionVec.begin(); it != sectionVec.end(); it++)
-    {
-        for (auto l = it->GetParam().begin(); l != it->GetParam().end(); l++)
-            cout << it->GetSectionName() << "." << l->GetKey() << ":" << l->GetValue() << "\n";
-    }
 }
