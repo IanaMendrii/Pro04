@@ -32,6 +32,6 @@ public:
     void CheckFirstSymbol(string &Line);
     void CheckSymbol(string &Line);
     bool IsSectionUnique(string &CurSection, vector<Section> &section);
-    void addSection(vector<string> &Pair, string &CurSection, vector<Section> &section, int &NumLine);
-    string ExtractSection(string &str, int NumLine);
+	void addSection(vector<string> &Pair, string &CurSection, vector<Section> &section, int &NumLine);
+	string ExtractSection(string &str, int NumLine);
 };

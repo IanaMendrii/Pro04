@@ -30,7 +30,8 @@ enum mode ReadWrite::ReadArg(int argc, char *argv[], int pos[], int &n)
         {
             if (nw != 0)
             {
-                throw Err_File( "Only one option --read-parameter or --write-parameter can be utilized at once");
+                cout << "Only one option --read - parameter or --write - parameter can be utilized at once.\n";
+                exit(1);
             }
             else
             {
@@ -43,8 +44,9 @@ enum mode ReadWrite::ReadArg(int argc, char *argv[], int pos[], int &n)
         {
             if (nr != 0)
             {
-               throw Err_File( "Only one option --read-parameter or --write-parameter can be utilized at once");
-                           }
+                cout << "Only one option --read-parameter or --write-parameter can be utilized at once.\n";
+                exit(1);
+            }
             else
             {
                 pos[nw] = i;
@@ -161,7 +163,7 @@ void ReadWrite::GetDataForWriting(char *argv[], int *posW, int nw, vector<dataFo
     for (int i = 1; i <= nw; i++)
     {
         if (posW[i] - posW[i - 1] < 4)
-            throw Err_File("Incorrect parameter list:There is less that three agrument after[--write-parameter]");
+            throw Err_File("Incorrect parameter list:There is less than three agrument after[--write-parameter]");
         if (posW[i] - posW[i - 1] >= 6)
             throw Err_File("Incorrect parameter list:There are too many agruments after[--write-parameter]");
         if (posW[i] - posW[i - 1] >= 4)
@@ -221,6 +223,16 @@ void WriteToFile(vector<Section> &sectionVec, string &filename)
             file << l->GetKey() << "=" << l->GetValue() << "\n";
     }
 }
+bool ReadWrite::IsKeyExist(string &key, string &value, vector<SectionParam> &Param)
+{
+    for (unsigned i = 0; i < Param.size(); i++)
+        if (Param[i].GetKey() == key)
+        {
+            Param[i].SetValue(value);
+            return false;
+        }
+    return true;
+}
 void ReadWrite::WritingData(vector<dataForWriting> &vecdataForWriting, vector<Section> &sectionVec, string &filename)
 {
     string section;
@@ -234,14 +246,17 @@ void ReadWrite::WritingData(vector<dataForWriting> &vecdataForWriting, vector<Se
         {
             if (section == it1->GetSectionName())
             {
-                if (!SP.IsKeyUnique(it->key, it1->GetParam()))
+                if (!IsKeyExist(it->key, it->value, it1->GetParam()))
                 {
-                    std::cout << "Key [" << it->key << "] already existed in Section " << it1->GetSectionName() << std::endl;
-                    exit(1);
+                    std::cout << "The object: " << it->section << "." << it->key << ":" << it->value << " has been successfully rewrited in config file\n";
+                    is = true;
                 }
-                it1->GetParam().push_back(SectionParam(it->key, it->value));
-                std::cout << "The object: " << it->section << "." << it->key << ":" << it->value << " has been successfully added in config file\n";
-                is = true;
+                else
+                {
+                    it1->GetParam().push_back(SectionParam(it->key, it->value));
+                    std::cout << "The object: " << it->section << "." << it->key << ":" << it->value << " has been successfully added in config file\n";
+                    is = true;
+                }
             }
         }
         if (!is)
@@ -251,7 +266,7 @@ void ReadWrite::WritingData(vector<dataForWriting> &vecdataForWriting, vector<Se
             sectionVec.push_back(Section(section, Param));
             Param.clear();
             std::cout << "The object: " << it->section << "." << it->key << ":" << it->value << " has been successfully added in config file\n";
-            std::cout << "Section: " << it->section << "has been created\n";
+            std::cout << "Section: " << it->section << " has been created\n";
         }
     }
     WriteToFile(sectionVec, filename);

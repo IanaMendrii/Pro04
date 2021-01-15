@@ -22,11 +22,11 @@ int main(int argc, char *argv[])
     vector<Section> sectionVec;
     try
     {
-		if (argc == 1)
-    {
-        throw Err_File("File path not specified");
-    }
-	    RW.Ishelp(argc, argv);
+        if (argc == 1)
+        {
+            throw Err_File("File path not specified");
+        }
+        RW.Ishelp(argc, argv);
         modeType = RW.ReadArg(argc, argv, pos, n);
         switch (modeType)
         {

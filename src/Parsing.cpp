@@ -75,7 +75,7 @@ void Parsing::GetLines(string &filename, vector<Section> &sectionVec)
                 break;
             case 0: //SectionParam;
                 if (CurSection == "")
-                    throw Err_Config("Line does not occur within a section");
+                    throw Err_Config("The fisrt line must be section");
                 Pair.push_back(str);
                 break;
             case -1:

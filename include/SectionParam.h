@@ -27,8 +27,11 @@ public:
     {
         return m_value;
     }
-
-    void removeSpaces(string &line);
+	void SetValue(string&value)
+	{
+		m_value = value;
+	}
+	void removeSpaces(string &line);
     void CheckFirstSymbol(string &Line);
     void CheckSymbol(string &Line);
     void isInsideSpace(string &Line);
